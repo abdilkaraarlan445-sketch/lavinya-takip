@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lavinya Ticaret – Günlük Satış Takip</title>
+<style>
+  :root {
+    --bg:#0B1120;--bg2:#111827;--bg3:#1C2A3A;--bg4:#243044;
+    --border:#2D3F55;--blue:#0EA5E9;--blue-dim:#0C2D45;
+    --cyan:#22D3EE;--cyan-dim:#0C3344;--green:#22C55E;--green-dim:#0E2D1E;
+    --amber:#F59E0B;--amber-dim:#2d1f00;--red:#EF4444;--red-dim:#2d0a0a;
+    --text:#F1F5F9;--text2:#94A3B8;--text3:#475569;
+    --r:12px;--rs:8px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;min-height:100vh;line-height:1.5;}
+
+  header{background:var(--bg2);border-bottom:1px solid var(--border);padding:14px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:10;}
+  .logo{display:flex;align-items:center;gap:10px;}
+  .logo-icon{width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,var(--blue),var(--cyan));display:flex;align-items:center;justify-content:center;font-size:18px;}
+  .logo-text h1{font-size:15px;font-weight:700;color:var(--blue);}
+  .logo-text p{font-size:10px;color:var(--text2);letter-spacing:1.2px;text-transform:uppercase;}
+  .nav-tabs{display:flex;gap:4px;}
+  .nav-tab{padding:6px 14px;border-radius:var(--rs);font-size:13px;font-weight:500;cursor:pointer;border:1px solid transparent;color:var(--text2);background:transparent;transition:all .2s;}
+  .nav-tab.active{background:var(--bg3);border-color:var(--border);color:var(--text);}
+  .nav-tab:hover:not(.active){color:var(--text);}
+
+  .screen{display:none;padding:20px;max-width:760px;margin:0 auto;}
+  .screen.active{display:block;}
+
+  .card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:16px;margin-bottom:16px;}
+  .card-label{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600;color:var(--text2);letter-spacing:.8px;text-transform:uppercase;margin-bottom:12px;}
+  .dot{width:6px;height:6px;border-radius:50%;display:inline-block;}
+
+  textarea{width:100%;min-height:160px;max-height:280px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--rs);color:var(--text);font-size:13px;line-height:1.6;padding:12px;resize:vertical;font-family:inherit;outline:none;transition:border-color .2s;}
+  textarea:focus{border-color:var(--blue);}
+  textarea::placeholder{color:var(--text3);}
+
+  .btn-row{display:flex;gap:10px;margin-top:12px;}
+  .btn{padding:10px 18px;border-radius:var(--rs);font-size:14px;font-weight:600;cursor:pointer;border:1px solid var(--border);display:flex;align-items:center;gap:6px;transition:all .15s;}
+  .btn-primary{background:var(--blue);border-color:var(--blue);color:#fff;flex:2;justify-content:center;}
+  .btn-primary:hover{background:#0284c7;}
+  .btn-secondary{background:transparent;color:var(--text2);flex:1;justify-content:center;}
+  .btn-secondary:hover{background:var(--bg3);color:var(--text);}
+  .btn-green{background:var(--green-dim);border-color:#166534;color:var(--green);flex:1;justify-content:center;}
+  .btn-green:hover{background:#14532d;}
+  .btn-cyan{background:var(--cyan-dim);border-color:#164e63;color:var(--cyan);flex:1;justify-content:center;}
+  .btn-cyan:hover{background:#083344;}
+  .btn:active{transform:scale(.97);}
+
+  .stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px;}
+  .stat-box{border-radius:var(--rs);padding:16px;text-align:center;}
+  .stat-box.blue{background:var(--blue-dim);border:1px solid #0e4272;}
+  .stat-box.cyan{background:var(--cyan-dim);border:1px solid #0c4a6e;}
+  .stat-val{font-size:40px;font-weight:900;line-height:1;margin-bottom:6px;}
+  .stat-box.blue .stat-val{color:var(--cyan);}
+  .stat-box.cyan .stat-val{color:var(--blue);}
+  .stat-lbl{font-size:11px;color:var(--text2);letter-spacing:.8px;text-transform:uppercase;}
+
+  .result-actions{display:flex;gap:10px;margin-top:4px;}
+  .saved-badge{display:none;background:var(--green-dim);border:1px solid #166534;color:var(--green);font-size:12px;padding:4px 10px;border-radius:6px;align-items:center;gap:5px;}
+  .saved-badge.show{display:flex;}
+
+  .section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+  .section-header span{font-size:12px;color:var(--text2);font-weight:600;letter-spacing:.8px;text-transform:uppercase;}
+  .toggle-btn{background:transparent;border:1px solid var(--border);color:var(--text2);padding:4px 10px;border-radius:6px;font-size:12px;cursor:pointer;transition:all .2s;}
+  .toggle-btn:hover{border-color:var(--blue);color:var(--blue);}
+
+  .orders-table{width:100%;border-collapse:collapse;font-size:13px;}
+  .orders-table th{text-align:left;padding:8px 10px;color:var(--text3);font-weight:600;border-bottom:1px solid var(--border);font-size:11px;letter-spacing:.6px;text-transform:uppercase;}
+  .orders-table td{padding:8px 10px;border-bottom:1px solid #1a2535;vertical-align:middle;}
+  .orders-table tr:last-child td{border-bottom:none;}
+  .orders-table tr:hover td{background:var(--bg3);}
+  .qty-badge{display:inline-block;background:var(--blue-dim);border:1px solid #0e3a5e;color:var(--cyan);font-weight:700;padding:2px 8px;border-radius:5px;font-size:12px;min-width:28px;text-align:center;}
+  .sender-badge{display:inline-block;padding:2px 8px;border-radius:5px;font-size:11px;font-weight:600;}
+  .s-rambo{background:#1e1135;border:1px solid #3b1d6e;color:#a78bfa;}
+  .s-babam{background:#0e2d1e;border:1px solid #166534;color:#4ade80;}
+  .s-other{background:var(--bg3);border:1px solid var(--border);color:var(--text2);}
+  .time-cell{color:var(--text3);font-size:11px;white-space:nowrap;}
+
+  .skipped-list{max-height:180px;overflow-y:auto;background:var(--bg3);border-radius:var(--rs);border:1px solid var(--border);}
+  .skipped-item{padding:7px 12px;font-size:12px;color:var(--text3);border-bottom:1px solid #1a2535;display:flex;gap:8px;align-items:flex-start;}
+  .skipped-item:last-child{border-bottom:none;}
+  .skip-reason{font-size:10px;background:var(--amber-dim);border:1px solid #78350f;color:var(--amber);padding:1px 6px;border-radius:4px;white-space:nowrap;flex-shrink:0;margin-top:1px;}
+
+  .history-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+  .history-header h2{font-size:16px;font-weight:700;}
+  .empty-state{text-align:center;padding:60px 20px;color:var(--text3);}
+  .empty-icon{font-size:48px;margin-bottom:12px;opacity:.4;}
+  .history-item{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:14px 16px;display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;transition:border-color .2s;}
+  .history-item:hover{border-color:#3b5270;}
+  .history-item-left{display:flex;align-items:center;gap:12px;}
+  .history-badge{width:48px;height:48px;border-radius:10px;background:var(--blue-dim);border:1px solid #0e3a5e;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:900;color:var(--cyan);min-width:48px;}
+  .history-info .title{font-size:14px;font-weight:600;}
+  .history-info .sub{font-size:11px;color:var(--text2);margin-top:2px;}
+  .del-btn{background:transparent;border:none;cursor:pointer;color:var(--text3);padding:6px;border-radius:6px;font-size:16px;transition:all .15s;}
+  .del-btn:hover{background:#3c1a1a;color:var(--red);}
+
+  #confirm-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:100;align-items:center;justify-content:center;}
+  #confirm-overlay.show{display:flex;}
+  .confirm-box{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:24px;max-width:320px;width:90%;}
+  .confirm-box h3{font-size:15px;margin-bottom:8px;}
+  .confirm-box p{font-size:13px;color:var(--text2);margin-bottom:20px;}
+  .confirm-btns{display:flex;gap:8px;justify-content:flex-end;}
+
+  #toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--bg3);border:1px solid var(--border);color:var(--text);font-size:13px;padding:10px 20px;border-radius:var(--rs);opacity:0;transition:opacity .3s;pointer-events:none;white-space:nowrap;z-index:999;}
+  #toast.show{opacity:1;}
+
+  @media(max-width:520px){
+    .stat-val{font-size:30px!important;}
+    .nav-tab{padding:6px 10px;font-size:12px;}
+    .orders-table td,.orders-table th{padding:6px 6px;font-size:12px;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <div class="logo-icon">💧</div>
+    <div class="logo-text">
+      <h1>Lavinya Ticaret</h1>
+      <p>Daily Sales Tracker</p>
+    </div>
+  </div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="switchTab('calc')">🧮 Hesapla</button>
+    <button class="nav-tab" onclick="switchTab('history')">📋 Geçmiş</button>
+  </div>
+</header>
+
+<div id="screen-calc" class="screen active">
+
+  <div class="card">
+    <div class="card-label"><span class="dot" style="background:var(--blue)"></span>WhatsApp Grubunu Yapıştır</div>
+    <textarea id="input-text" placeholder="[09:45, 18.03.2026] Rambo: Şekerci Apartmanı 4 adet su&#10;[10:20, 18.03.2026] Babam: Polat Aybek 1 adet su&#10;[18:20, 18.03.2026] Ablam: Neden 100 değil&#10;&#10;Tarihleri, linkleri, telefon numaralarını ve sohbeti otomatik filtreler."></textarea>
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="clearAll()">✕ Temizle</button>
+      <button class="btn btn-primary" onclick="calculate()">🧮 Hesapla</button>
+    </div>
+  </div>
+
+  <div class="card" id="result-card" style="display:none">
+    <div class="card-label">
+      <span class="dot" style="background:var(--green)"></span>
+      Sonuç
+      <span class="saved-badge" id="saved-badge">✓ Kaydedildi</span>
+    </div>
+    <div class="stat-grid">
+      <div class="stat-box blue">
+        <div class="stat-val" id="total-units">0</div>
+        <div class="stat-lbl">Toplam Adet</div>
+      </div>
+      <div class="stat-box cyan">
+        <div class="stat-val" id="total-orders">0</div>
+        <div class="stat-lbl">Sipariş Sayısı</div>
+      </div>
+    </div>
+    <div class="result-actions">
+      <button class="btn btn-cyan" onclick="copyResult()">📋 Toplam Adedi Kopyala</button>
+      <button class="btn btn-green" onclick="saveRecord()">💾 Kaydet</button>
+    </div>
+  </div>
+
+  <div class="card" id="orders-section" style="display:none">
+    <div class="section-header">
+      <span><span class="dot" style="background:var(--cyan);margin-right:6px"></span>Tespit Edilen Siparişler (<span id="order-count">0</span>)</span>
+      <button class="toggle-btn" id="btn-orders" onclick="toggleSection('orders-wrap','btn-orders')">Gizle</button>
+    </div>
+    <div id="orders-wrap">
+      <table class="orders-table">
+        <thead><tr><th>Saat</th><th>Gönderen</th><th>Adres / Müşteri</th><th style="text-align:center">Adet</th></tr></thead>
+        <tbody id="orders-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card" id="skipped-section" style="display:none">
+    <div class="section-header">
+      <span><span class="dot" style="background:var(--amber);margin-right:6px"></span>Atlanan Mesajlar (<span id="skipped-count">0</span>)</span>
+      <button class="toggle-btn" id="btn-skipped" onclick="toggleSection('skipped-wrap','btn-skipped')">Göster</button>
+    </div>
+    <div id="skipped-wrap" style="display:none">
+      <div class="skipped-list" id="skipped-list"></div>
+    </div>
+  </div>
+
+</div>
+
+<div id="screen-history" class="screen">
+  <div class="history-header">
+    <h2>Satış Geçmişi</h2>
+    <button onclick="showConfirm()" style="background:transparent;border:1px solid var(--border);color:var(--red);padding:6px 12px;border-radius:var(--rs);font-size:13px;cursor:pointer;">🗑 Tümünü Sil</button>
+  </div>
+  <div id="history-list"></div>
+</div>
+
+<div id="confirm-overlay">
+  <div class="confirm-box">
+    <h3>Tüm Geçmişi Sil?</h3>
+    <p>Tüm kayıtlı satış verileri kalıcı olarak silinecek.</p>
+    <div class="confirm-btns">
+      <button class="btn btn-secondary" onclick="hideConfirm()" style="flex:unset;padding:8px 16px">İptal</button>
+      <button class="btn" style="background:#7f1d1d;border-color:#991b1b;color:#fca5a5;flex:unset;padding:8px 16px" onclick="clearAllHistory()">Sil</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ─── PARSER ───────────────────────────────────────────────────────────────────
+// WhatsApp format: [SS:DD, GG.AA.YYYY] İsim: mesaj
+const WA_LINE = /^\[(\d{2}:\d{2}),\s*[\d.]+\]\s*([^:]+):\s*(.+)$/;
+
+// Sipariş birim kelimeleri
+const UNITS = ['adet','tane','su','şişe','damacana'];
+
+// Rakamla yazılmış sayılar (Türkçe)
+const WORD_MAP = {bir:1,iki:2,'üç':3,'dört':4,'beş':5,'altı':6,yedi:7,sekiz:8,dokuz:9,on:10};
+
+// Su/birim içeriyor mu?
+function hasUnit(m){ const l=m.toLowerCase(); return UNITS.some(u=>l.includes(u)); }
+
+// Miktarı çıkar → sayı veya null
+// Önce "rakam + birim" yan yana arar (adres numaralarını yoksayar)
+// Sonra "yazıyla sayı + birim", en son fallback olarak mesajın sonundaki rakamı alır
+function extractQty(msg){
+  const m = msg.toLowerCase().replace(/['']/g,"'");
+
+  // 1) Rakam + birim yan yana: "3 adet", "2 tane", "4 su"
+  //    \s+ ile aralarında boşluk zorunlu → "6417su" gibi yanlış eşleşme olmaz
+  for(const u of UNITS){
+    let r = new RegExp('(\\d+)\\s+' + u + '\\b','i').exec(m);
+    if(r) return +r[1];
+    r = new RegExp('\\b' + u + '\\s+(\\d+)','i').exec(m);
+    if(r) return +r[1];
+  }
+
+  // 2) Yazıyla sayı + birim: "iki tane", "bir adet su"
+  for(const [w,n] of Object.entries(WORD_MAP)){
+    for(const u of UNITS){
+      const re = new RegExp('\\b' + w + '\\s+' + u + '\\b','i');
+      if(re.test(m)) return n;
+    }
+  }
+
+  // 3) Fallback: birim var ama rakam birimden uzakta
+  //    "biraz önce 2 tane sipariş etmiştim" → tane var, 2 al
+  //    Mesajdaki son küçük rakamı al (1-99 arası, adres no değil)
+  if(hasUnit(m)){
+    const nums = [...m.matchAll(/\d+/g)].map(x=>+x[0]).filter(n=>n>=1&&n<=99);
+    if(nums.length) return nums[nums.length-1];
+  }
+
+  return null;
+}
+
+// Atlama sebeplerini sırayla dene
+const SKIP_RULES = [
+  { label:'Link',         test: m => /https?:\/\//.test(m) },
+  { label:'Telefon',      test: m => /\b0\d{3}[\s\d]{9,}\b/.test(m) },
+  { label:'Fiyat/₺',     test: m => /\d+\s*(₺|\btl\b)/i.test(m) || /toplam\s*\d+/i.test(m) },
+  { label:'Soru',         test: m => m.includes('?') || /\b(kaç|kaçtane|neden|niye|niçin|satmış mı|sattınız|sattın mı|sattı mı|verildi mi|geldi mi|var mı|bitti mi)\b/i.test(m) },
+  // "biraz önce 2 tane sipariş etmiştim" → birim kelimesi VAR, sayılsın; sadece "sipariş etmiştim" → atla
+  { label:'Müşteri yorumu', test: m => /\b(sipariş etmiştim|sipariş verdim|sipariş vermiştim|daha bitmedi)\b/i.test(m) && !hasUnit(m) },
+  { label:'Tuz (ürün değil)', test: m => /\btuz\b/i.test(m) && !hasUnit(m) },
+  { label:'Sipariş değil',test: m => !extractQty(m) }
+];
+
+function senderClass(name){
+  const n=name.toLowerCase();
+  if(n.includes('rambo')) return 's-rambo';
+  if(n.includes('baba'))  return 's-babam';
+  return 's-other';
+}
+
+function cleanAddress(msg){
+  return msg
+    .replace(/\d+\s*(adet|tane|şişe|damacana)/gi,'')
+    .replace(/\b(su|verildi|verilecek|teslim|edildi)\b/gi,'')
+    .replace(/\s{2,}/g,' ').trim()
+    .replace(/[\s,.\-]+$/,'');
+}
+
+function esc(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// ─── HESAPLA ──────────────────────────────────────────────────────────────────
+let currentResult = null;
+
+function calculate(){
+  const raw = document.getElementById('input-text').value;
+  if(!raw.trim()){ toast('Lütfen mesaj yapıştırın'); return; }
+
+  const orders=[], skipped=[];
+
+  for(const line of raw.split('\n')){
+    const m = line.trim().match(WA_LINE);
+    if(!m) continue; // WhatsApp formatı değil — sessizce atla
+
+    const [,time,sender,msg] = m;
+
+    let reason = null;
+    for(const rule of SKIP_RULES){ if(rule.test(msg)){reason=rule.label;break;} }
+    if(reason){ skipped.push({time,sender:sender.trim(),msg,reason}); continue; }
+
+    const qty = extractQty(msg);
+    if(!qty){ skipped.push({time,sender:sender.trim(),msg,reason:'Miktar yok'}); continue; }
+
+    orders.push({time, sender:sender.trim(), address:cleanAddress(msg), qty});
+  }
+
+  if(!orders.length){ toast('Sipariş bulunamadı'); return; }
+
+  const totalUnits  = orders.reduce((s,o)=>s+o.qty,0);
+  const totalOrders = orders.length;
+  currentResult = {totalUnits,totalOrders};
+
+  document.getElementById('total-units').textContent  = totalUnits;
+  document.getElementById('total-orders').textContent = totalOrders;
+  document.getElementById('result-card').style.display = 'block';
+  document.getElementById('saved-badge').classList.remove('show');
+
+  // Sipariş tablosu
+  document.getElementById('order-count').textContent = totalOrders;
+  document.getElementById('orders-tbody').innerHTML = orders.map(o=>`
+    <tr>
+      <td class="time-cell">${o.time}</td>
+      <td><span class="sender-badge ${senderClass(o.sender)}">${esc(o.sender)}</span></td>
+      <td style="color:var(--text)">${esc(o.address)}</td>
+      <td style="text-align:center"><span class="qty-badge">${o.qty}</span></td>
+    </tr>`).join('');
+  document.getElementById('orders-section').style.display='block';
+  document.getElementById('orders-wrap').style.display='block';
+  document.getElementById('btn-orders').textContent='Gizle';
+
+  // Atlananlar
+  document.getElementById('skipped-count').textContent = skipped.length;
+  document.getElementById('skipped-section').style.display = skipped.length?'block':'none';
+  document.getElementById('skipped-wrap').style.display='none';
+  document.getElementById('btn-skipped').textContent='Göster';
+  document.getElementById('skipped-list').innerHTML = skipped.map(s=>`
+    <div class="skipped-item">
+      <span class="skip-reason">${s.reason}</span>
+      <span>${esc(s.msg.length>90?s.msg.slice(0,90)+'…':s.msg)}</span>
+    </div>`).join('');
+
+  document.getElementById('result-card').scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+function toggleSection(wrapId, btnId){
+  const wrap = document.getElementById(wrapId);
+  const btn  = document.getElementById(btnId);
+  const hidden = wrap.style.display==='none';
+  wrap.style.display = hidden?'block':'none';
+  btn.textContent = hidden?'Gizle':'Göster';
+}
+
+function clearAll(){
+  document.getElementById('input-text').value='';
+  ['result-card','orders-section','skipped-section'].forEach(id=>document.getElementById(id).style.display='none');
+  currentResult=null;
+}
+
+function copyResult(){
+  if(!currentResult) return;
+  navigator.clipboard.writeText(String(currentResult.totalUnits))
+    .then(()=>toast('Kopyalandı: '+currentResult.totalUnits+' adet'))
+    .catch(()=>toast('Kopyalama başarısız'));
+}
+
+// ─── GEÇMİŞ ──────────────────────────────────────────────────────────────────
+const KEY='lavinya_history';
+const getHistory=()=>{ try{return JSON.parse(localStorage.getItem(KEY))||[];}catch{return[];} };
+
+function saveRecord(){
+  if(!currentResult) return;
+  const h=getHistory();
+  const now=new Date();
+  const date=now.toLocaleDateString('tr-TR',{day:'2-digit',month:'short',year:'numeric'})
+            +', '+now.toLocaleTimeString('tr-TR',{hour:'2-digit',minute:'2-digit'});
+  h.unshift({id:Date.now(),date,totalUnits:currentResult.totalUnits,totalOrders:currentResult.totalOrders});
+  localStorage.setItem(KEY,JSON.stringify(h.slice(0,100)));
+  document.getElementById('saved-badge').classList.add('show');
+  toast('Geçmişe kaydedildi!');
+}
+
+function renderHistory(){
+  const h=getHistory();
+  const c=document.getElementById('history-list');
+  if(!h.length){
+    c.innerHTML=`<div class="empty-state"><div class="empty-icon">📋</div><p>Henüz kayıt yok</p><p style="font-size:12px;margin-top:6px">Hesapla ve Kaydet ile buraya ekleyin</p></div>`;
+    return;
+  }
+  c.innerHTML=h.map(r=>`
+    <div class="history-item">
+      <div class="history-item-left">
+        <div class="history-badge">${r.totalUnits}</div>
+        <div class="history-info">
+          <div class="title">${r.totalUnits} adet &middot; ${r.totalOrders} sipariş</div>
+          <div class="sub">${r.date}</div>
+        </div>
+      </div>
+      <button class="del-btn" onclick="deleteRecord(${r.id})">🗑</button>
+    </div>`).join('');
+}
+
+function deleteRecord(id){
+  localStorage.setItem(KEY,JSON.stringify(getHistory().filter(r=>r.id!==id)));
+  renderHistory(); toast('Kayıt silindi');
+}
+
+function showConfirm(){ if(!getHistory().length){toast('Zaten boş');return;} document.getElementById('confirm-overlay').classList.add('show'); }
+function hideConfirm(){ document.getElementById('confirm-overlay').classList.remove('show'); }
+function clearAllHistory(){ localStorage.removeItem(KEY); hideConfirm(); renderHistory(); toast('Geçmiş temizlendi'); }
+
+function switchTab(tab){
+  document.querySelectorAll('.nav-tab').forEach((t,i)=>t.classList.toggle('active',(i===0)===(tab==='calc')));
+  document.getElementById('screen-calc').classList.toggle('active',tab==='calc');
+  document.getElementById('screen-history').classList.toggle('active',tab==='history');
+  if(tab==='history') renderHistory();
+}
+
+document.getElementById('confirm-overlay').addEventListener('click',e=>{ if(e.target===e.currentTarget)hideConfirm(); });
+
+let tt;
+function toast(msg){
+  const el=document.getElementById('toast');
+  el.textContent=msg; el.classList.add('show');
+  clearTimeout(tt); tt=setTimeout(()=>el.classList.remove('show'),2600);
+}
+</script>
+</body>
+</html>
